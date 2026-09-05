@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>同人サークルカードメーカー(完全無料)</title>
+<style>
+  :root {
+    --accent: #c9587a;
+    --accent-dark: #9c3b58;
+    --bg: #fbf6f8;
+    --card: #ffffff;
+    --border: #f0dce3;
+    --text: #2e2a2c;
+    --muted: #8a7d81;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: #fff;
+    padding: 28px 20px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 8px; font-size: 22px; }
+  header p { margin: 0; font-size: 13px; opacity: 0.9; }
+  main {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  @media (min-width: 900px) {
+    main { grid-template-columns: 1fr 1fr; align-items: start; }
+    .preview-col { position: sticky; top: 20px; }
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .card h2 {
+    margin: 0 0 14px;
+    font-size: 16px;
+    border-left: 4px solid var(--accent);
+    padding-left: 10px;
+  }
+  .field { margin-bottom: 12px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .field input[type="text"], .field textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .field textarea { resize: vertical; min-height: 50px; }
+  .row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .row input[type="text"] { flex: 1; }
+  .row button {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 8px 10px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+  .btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .btn.ghost {
+    background: none;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+  .btn.small { padding: 6px 12px; font-size: 13px; }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+  .theme-options { display: flex; gap: 10px; flex-wrap: wrap; }
+  .theme-swatch {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent;
+  }
+  .theme-swatch.selected { border-color: var(--text); }
+  .file-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .file-row .thumb {
+    width: 44px; height: 44px; border-radius: 6px; border: 1px solid var(--border);
+    object-fit: contain; background: #fff;
+  }
+  .note {
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 10px;
+    white-space: pre-wrap;
+  }
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 24px 20px 40px;
+  }
+  footer a { color: var(--accent); }
+
+  /* --- card preview --- */
+  .card-outer { display: flex; justify-content: center; }
+  .biz-card {
+    width: 91mm;
+    height: 55mm;
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    padding: 5mm 6mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  }
+  .biz-card .circleName { font-size: 15px; font-weight: bold; line-height: 1.3; word-break: break-word; }
+  .biz-card .ownerName { font-size: 10px; opacity: 0.9; margin-top: 2px; }
+  .biz-card .tagline { font-size: 8.5px; opacity: 0.95; margin-top: 4px; line-height: 1.4; white-space: pre-wrap; }
+  .biz-card .genres { font-size: 7.5px; margin-top: 4px; opacity: 0.9; }
+  .biz-card .snsList { font-size: 7.5px; line-height: 1.5; }
+  .biz-card .bottomRow { display: flex; justify-content: space-between; align-items: flex-end; }
+  .biz-card .logoImg { width: 12mm; height: 12mm; object-fit: cover; border-radius: 50%; border: 1px solid rgba(255,255,255,0.6); background: #fff; }
+  .biz-card .qrImg { width: 13mm; height: 13mm; object-fit: contain; background: #fff; border-radius: 3px; padding: 1mm; }
+
+  @media print {
+    header, .form-col, .btn-row, .no-print { display: none !important; }
+    body { background: #fff; }
+    main { display: block; padding: 0; max-width: none; }
+    .preview-col { position: static; }
+    #printGrid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3mm;
+    }
+    .biz-card { box-shadow: none; border: 1px dashed #bbb; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>同人サークルカードメーカー</h1>
+  <p>サークル名・SNS・取り扱いジャンルを入れるだけで名刺サイズのカードを作成(完全無料・登録不要)</p>
+</header>
+
+<main>
+
+  <div class="form-col">
+
+    <div class="card">
+      <h2>① 基本情報</h2>
+      <div class="field">
+        <label for="circleName">サークル名</label>
+        <input type="text" id="circleName" placeholder="例: つきよみ堂">
+      </div>
+      <div class="field">
+        <label for="ownerName">代表者名・ペンネーム</label>
+        <input type="text" id="ownerName" placeholder="例: 星野つき">
+      </div>
+      <div class="field">
+        <label for="tagline">活動内容・一言メッセージ</label>
+        <textarea id="tagline" placeholder="例: オリジナルファンタジー漫画を中心に活動しています。よろしくお願いします!"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>② 取り扱いジャンル</h2>
+      <div id="genreRows"></div>
+      <button type="button" class="btn ghost small" id="addGenreBtn">+ ジャンルを追加</button>
+    </div>
+
+    <div class="card">
+      <h2>③ SNS・連絡先</h2>
+      <div id="snsRows"></div>
+      <button type="button" class="btn ghost small" id="addSnsBtn">+ SNSを追加</button>
+    </div>
+
+    <div class="card">
+      <h2>④ 画像(任意)</h2>
+      <div class="field">
+        <label>アイコン・ロゴ画像</label>
+        <div class="file-row">
+          <img id="logoThumb" class="thumb" style="display:none;">
+          <input type="file" id="logoInput" accept="image/*" aria-label="アイコン・ロゴ画像を選択">
+          <button type="button" class="btn ghost small" id="clearLogoBtn">削除</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>QRコード画像(お好きなQR作成サイトで作った画像を読み込めます)</label>
+        <div class="file-row">
+          <img id="qrThumb" class="thumb" style="display:none;">
+          <input type="file" id="qrInput" accept="image/*" aria-label="QRコード画像を選択">
+          <button type="button" class="btn ghost small" id="clearQrBtn">削除</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>⑤ デザインテーマ</h2>
+      <div class="theme-options" id="themeOptions"></div>
+    </div>
+
+    <div class="btn-row no-print">
+      <button class="btn" id="saveBtn">このブラウザに保存</button>
+      <button class="btn ghost" id="loadBtn">保存データを読み込む</button>
+    </div>
+  </div>
+
+  <div class="preview-col">
+    <div class="card">
+      <h2>プレビュー</h2>
+      <div class="card-outer">
+        <div class="biz-card" id="previewCard"></div>
+      </div>
+      <div class="note">
+        ※ 印刷サイズは名刺サイズ(91×55mm)です。「カードを印刷」を押すとA4に複数枚並べて印刷できます(裁断してお使いください)。
+        ※ QRコードは本ツールでは生成しません。無料のQRコード作成サイトで作った画像を「④ 画像」から読み込んでご利用ください。
+      </div>
+      <div class="btn-row no-print">
+        <button class="btn" id="printBtn">カードを印刷(10面付け)</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="printGrid" style="display:none;"></div>
+
+</main>
+
+<footer>
+  <p>入力内容・画像は一切外部に送信されません(すべてブラウザ内で完結します)。</p>
+  <p>不具合・ご要望は BOOTHメッセージ、または X(Twitter) <a href="https://x.com/uuhai0625" target="_blank" rel="noopener">@uuhai0625</a> まで。</p>
+</footer>
+
+<script>
+function esc(s) {
+  return (s || "").toString().replace(/[<>&"']/g, function (c) {
+    return { "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+var SAVE_KEY = "circle_card_maker_v1";
+
+var THEMES = [
+  { id: "pink", from: "#e58fa8", to: "#b14766" },
+  { id: "mint", from: "#6fc2b0", to: "#2d8f79" },
+  { id: "navy", from: "#5b6fa8", to: "#33406b" },
+  { id: "mustard", from: "#d9a441", to: "#a8721f" }
+];
+
+var data = {
+  circleName: "",
+  ownerName: "",
+  tagline: "",
+  genres: [""],
+  sns: [{ platform: "", handle: "" }],
+  logoData: null,
+  qrData: null,
+  theme: "pink"
+};
+
+function renderGenres() {
+  var wrap = document.getElementById("genreRows");
+  wrap.innerHTML = "";
+  data.genres.forEach(function (g, idx) {
+    var row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML =
+      '<input type="text" class="genreInput" data-idx="' + idx + '" aria-label="ジャンル名" placeholder="例: オリジナル漫画" value="' + esc(g) + '">' +
+      '<button type="button" class="removeGenreBtn" data-idx="' + idx + '" aria-label="このジャンルを削除">✕</button>';
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll(".genreInput").forEach(function (el) {
+    el.addEventListener("input", function () {
+      data.genres[Number(el.dataset.idx)] = el.value;
+      renderPreview();
+    });
+  });
+  wrap.querySelectorAll(".removeGenreBtn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      data.genres.splice(Number(btn.dataset.idx), 1);
+      renderGenres();
+      renderPreview();
+    });
+  });
+}
+
+function renderSns() {
+  var wrap = document.getElementById("snsRows");
+  wrap.innerHTML = "";
+  data.sns.forEach(function (s, idx) {
+    var row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML =
+      '<input type="text" class="snsPlatformInput" data-idx="' + idx + '" aria-label="SNS名" placeholder="例: X(Twitter)" style="flex:1;" value="' + esc(s.platform) + '">' +
+      '<input type="text" class="snsHandleInput" data-idx="' + idx + '" aria-label="SNSのID・URL" placeholder="例: @tsukiyomi_dou" style="flex:2;" value="' + esc(s.handle) + '">' +
+      '<button type="button" class="removeSnsBtn" data-idx="' + idx + '" aria-label="このSNS欄を削除">✕</button>';
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll(".snsPlatformInput").forEach(function (el) {
+    el.addEventListener("input", function () {
+      data.sns[Number(el.dataset.idx)].platform = el.value;
+      renderPreview();
+    });
+  });
+  wrap.querySelectorAll(".snsHandleInput").forEach(function (el) {
+    el.addEventListener("input", function () {
+      data.sns[Number(el.dataset.idx)].handle = el.value;
+      renderPreview();
+    });
+  });
+  wrap.querySelectorAll(".removeSnsBtn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      data.sns.splice(Number(btn.dataset.idx), 1);
+      renderSns();
+      renderPreview();
+    });
+  });
+}
+
+function renderThemeOptions() {
+  var wrap = document.getElementById("themeOptions");
+  wrap.innerHTML = "";
+  THEMES.forEach(function (t) {
+    var sw = document.createElement("div");
+    sw.className = "theme-swatch" + (data.theme === t.id ? " selected" : "");
+    sw.style.background = "linear-gradient(135deg," + t.from + "," + t.to + ")";
+    sw.setAttribute("role", "button");
+    sw.setAttribute("aria-label", "テーマ: " + t.id);
+    sw.dataset.themeId = t.id;
+    sw.addEventListener("click", function () {
+      data.theme = t.id;
+      renderThemeOptions();
+      renderPreview();
+    });
+    wrap.appendChild(sw);
+  });
+}
+
+function currentTheme() {
+  return THEMES.filter(function (t) { return t.id === data.theme; })[0] || THEMES[0];
+}
+
+function buildCardInnerHtml() {
+  var t = currentTheme();
+  var genresText = data.genres.filter(function (g) { return g; }).join(" / ");
+  var snsHtml = data.sns.filter(function (s) { return s.platform || s.handle; }).map(function (s) {
+    return "<div>" + esc(s.platform) + (s.platform && s.handle ? " : " : "") + esc(s.handle) + "</div>";
+  }).join("");
+
+  return '<div style="background:linear-gradient(135deg,' + t.from + ',' + t.to + '); position:absolute; inset:0;"></div>' +
+    '<div style="position:relative; display:flex; flex-direction:column; justify-content:space-between; height:100%;">' +
+    '<div>' +
+    '<div class="circleName">' + esc(data.circleName || "サークル名") + '</div>' +
+    '<div class="ownerName">' + esc(data.ownerName) + '</div>' +
+    (data.tagline ? '<div class="tagline">' + esc(data.tagline) + '</div>' : '') +
+    (genresText ? '<div class="genres">' + esc(genresText) + '</div>' : '') +
+    '</div>' +
+    '<div class="bottomRow">' +
+    '<div class="snsList">' + snsHtml + '</div>' +
+    '<div style="display:flex; gap:2mm; align-items:flex-end;">' +
+    (data.logoData ? '<img class="logoImg" src="' + data.logoData + '">' : '') +
+    (data.qrData ? '<img class="qrImg" src="' + data.qrData + '">' : '') +
+    '</div>' +
+    '</div>' +
+    '</div>';
+}
+
+function renderPreview() {
+  document.getElementById("previewCard").innerHTML = buildCardInnerHtml();
+}
+
+function readImageFile(file, callback) {
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) {
+    alert("画像サイズが大きすぎます(3MB以下にしてください)。");
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    callback(e.target.result);
+  };
+  reader.onerror = function () {
+    alert("画像の読み込みに失敗しました。");
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateThumb(id, src) {
+  var img = document.getElementById(id);
+  if (src) {
+    img.src = src;
+    img.style.display = "inline-block";
+  } else {
+    img.style.display = "none";
+  }
+}
+
+document.getElementById("circleName").addEventListener("input", function (e) { data.circleName = e.target.value; renderPreview(); });
+document.getElementById("ownerName").addEventListener("input", function (e) { data.ownerName = e.target.value; renderPreview(); });
+document.getElementById("tagline").addEventListener("input", function (e) { data.tagline = e.target.value; renderPreview(); });
+
+document.getElementById("addGenreBtn").addEventListener("click", function () {
+  data.genres.push("");
+  renderGenres();
+});
+document.getElementById("addSnsBtn").addEventListener("click", function () {
+  data.sns.push({ platform: "", handle: "" });
+  renderSns();
+});
+
+document.getElementById("logoInput").addEventListener("change", function (e) {
+  readImageFile(e.target.files[0], function (dataUrl) {
+    data.logoData = dataUrl;
+    updateThumb("logoThumb", dataUrl);
+    renderPreview();
+  });
+});
+document.getElementById("clearLogoBtn").addEventListener("click", function () {
+  data.logoData = null;
+  document.getElementById("logoInput").value = "";
+  updateThumb("logoThumb", null);
+  renderPreview();
+});
+document.getElementById("qrInput").addEventListener("change", function (e) {
+  readImageFile(e.target.files[0], function (dataUrl) {
+    data.qrData = dataUrl;
+    updateThumb("qrThumb", dataUrl);
+    renderPreview();
+  });
+});
+document.getElementById("clearQrBtn").addEventListener("click", function () {
+  data.qrData = null;
+  document.getElementById("qrInput").value = "";
+  updateThumb("qrThumb", null);
+  renderPreview();
+});
+
+document.getElementById("saveBtn").addEventListener("click", function () {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    alert("保存しました。");
+  } catch (e) {
+    alert("保存に失敗しました(画像サイズが大きい場合や、プライベートモード等ではご利用いただけない場合があります)。");
+  }
+});
+
+document.getElementById("loadBtn").addEventListener("click", function () {
+  var raw;
+  try {
+    raw = localStorage.getItem(SAVE_KEY);
+  } catch (e) {
+    raw = null;
+  }
+  if (!raw) {
+    alert("保存されたデータが見つかりませんでした。");
+    return;
+  }
+  var loaded;
+  try {
+    loaded = JSON.parse(raw);
+  } catch (e) {
+    alert("保存データの形式が正しくないため読み込めませんでした。");
+    return;
+  }
+  if (!loaded || typeof loaded !== "object" || !Array.isArray(loaded.genres) || !Array.isArray(loaded.sns)) {
+    alert("保存データの形式が正しくないため読み込めませんでした。");
+    return;
+  }
+  data.circleName = typeof loaded.circleName === "string" ? loaded.circleName : "";
+  data.ownerName = typeof loaded.ownerName === "string" ? loaded.ownerName : "";
+  data.tagline = typeof loaded.tagline === "string" ? loaded.tagline : "";
+  data.genres = loaded.genres.filter(function (g) { return typeof g === "string"; });
+  if (data.genres.length === 0) data.genres = [""];
+  data.sns = loaded.sns.filter(function (s) { return s && typeof s === "object"; }).map(function (s) {
+    return { platform: typeof s.platform === "string" ? s.platform : "", handle: typeof s.handle === "string" ? s.handle : "" };
+  });
+  if (data.sns.length === 0) data.sns = [{ platform: "", handle: "" }];
+  data.logoData = typeof loaded.logoData === "string" ? loaded.logoData : null;
+  data.qrData = typeof loaded.qrData === "string" ? loaded.qrData : null;
+  data.theme = THEMES.some(function (t) { return t.id === loaded.theme; }) ? loaded.theme : "pink";
+
+  document.getElementById("circleName").value = data.circleName;
+  document.getElementById("ownerName").value = data.ownerName;
+  document.getElementById("tagline").value = data.tagline;
+  updateThumb("logoThumb", data.logoData);
+  updateThumb("qrThumb", data.qrData);
+  renderGenres();
+  renderSns();
+  renderThemeOptions();
+  renderPreview();
+  alert("読み込みました。");
+});
+
+document.getElementById("printBtn").addEventListener("click", function () {
+  var grid = document.getElementById("printGrid");
+  var html = "";
+  for (var i = 0; i < 10; i++) {
+    html += '<div class="biz-card">' + buildCardInnerHtml() + '</div>';
+  }
+  grid.innerHTML = html;
+  grid.style.display = "block";
+  window.print();
+});
+
+renderGenres();
+renderSns();
+renderThemeOptions();
+renderPreview();
+</script>
+
+</body>
+</html>
