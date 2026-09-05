@@ -84,8 +84,8 @@
     color: var(--muted);
     cursor: pointer;
     padding: 8px 10px;
-    min-width: 36px;
-    min-height: 36px;
+    min-width: 44px;
+    min-height: 44px;
   }
   .btn {
     background: var(--accent);
@@ -164,12 +164,14 @@
     body { background: #fff; }
     main { display: block; padding: 0; max-width: none; }
     .preview-col { position: static; }
+    @page { size: A4; margin: 8mm; }
     #printGrid {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(2, 91mm);
       gap: 3mm;
+      justify-content: center;
     }
-    .biz-card { box-shadow: none; border: 1px dashed #bbb; }
+    .biz-card { box-shadow: none; border: 1px dashed #bbb; page-break-inside: avoid; break-inside: avoid; }
   }
 </style>
 </head>
@@ -273,6 +275,11 @@ function esc(s) {
   return (s || "").toString().replace(/[<>&"']/g, function (c) {
     return { "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" }[c];
   });
+}
+
+var SAFE_IMAGE_DATA_URI = /^data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+/]+=*$/;
+function isSafeImageDataUri(s) {
+  return typeof s === "string" && SAFE_IMAGE_DATA_URI.test(s);
 }
 
 var SAVE_KEY = "circle_card_maker_v1";
@@ -406,14 +413,23 @@ function renderPreview() {
   document.getElementById("previewCard").innerHTML = buildCardInnerHtml();
 }
 
+var ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
 function readImageFile(file, callback) {
   if (!file) return;
+  if (ALLOWED_IMAGE_TYPES.indexOf(file.type) === -1) {
+    alert("対応していない画像形式です(PNG/JPEG/GIF/WEBPをご利用ください)。");
+    return;
+  }
   if (file.size > 3 * 1024 * 1024) {
     alert("画像サイズが大きすぎます(3MB以下にしてください)。");
     return;
   }
   var reader = new FileReader();
   reader.onload = function (e) {
+    if (!isSafeImageDataUri(e.target.result)) {
+      alert("画像の読み込みに失敗しました。");
+      return;
+    }
     callback(e.target.result);
   };
   reader.onerror = function () {
@@ -512,8 +528,8 @@ document.getElementById("loadBtn").addEventListener("click", function () {
     return { platform: typeof s.platform === "string" ? s.platform : "", handle: typeof s.handle === "string" ? s.handle : "" };
   });
   if (data.sns.length === 0) data.sns = [{ platform: "", handle: "" }];
-  data.logoData = typeof loaded.logoData === "string" ? loaded.logoData : null;
-  data.qrData = typeof loaded.qrData === "string" ? loaded.qrData : null;
+  data.logoData = isSafeImageDataUri(loaded.logoData) ? loaded.logoData : null;
+  data.qrData = isSafeImageDataUri(loaded.qrData) ? loaded.qrData : null;
   data.theme = THEMES.some(function (t) { return t.id === loaded.theme; }) ? loaded.theme : "pink";
 
   document.getElementById("circleName").value = data.circleName;
